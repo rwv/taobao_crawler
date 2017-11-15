@@ -6,6 +6,7 @@ sys.path.append("../")
 import requests
 from utils.db import *
 from utils.config import *
+from utils.model import *
 
 api_url = r'http://s.m.taobao.com/search'
 params = {
@@ -54,7 +55,8 @@ class ItemCrawler:
         :return: None
         """
         for item in items:
-            if self.collection.find({'item_id': item['item_id']}).count() == 0:
+            data = Item(item, False)
+            if self.collection.find({'item_id': Item.item_id}).count() == 0:
                 self.collection.insert(item)
 
     def __close(self):
