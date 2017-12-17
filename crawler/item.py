@@ -1,63 +1,63 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
+import json
 import sys
 sys.path.append("../")
-import requests
-from utils.db import *
-from utils.config import *
 from utils.model import *
+from utils.utils import *
+from utils.config import *
 
-api_url = r'http://s.m.taobao.com/search'
-params = {
-    'q': '',
-    'm': 'api4h5',
-    'page': 1
-}
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 
 class ItemCrawler:
+    """ 爬取淘宝手机商品记录 """
+
     def __init__(self):
-        """
-        数据库初始化
-        """
         self.client = init_client()
-        self.db = self.client[db_config['db_name']]
+        self.db = self.client[config['db_name']]
         self.collection = self.db.items
 
-    def run(self, keywords, pages_count):
-        """
-        爬取商品
-
-        :param keywords: 产品关键字
-        :param pages_count: 爬取页数
-        :return: None
-        """
+    def run(self):
+        urls = []
+        keywords = ['手机']
+        pages_count = 10000
         for i in range(1, pages_count + 1):
-            params['page'] = i
             for keyword in keywords:
-                params['q'] = keyword
-                r = requests.get(url=api_url, params=params)
-                print(r.url)
-                data = r.json()['listItem']
-                print(data)
-                if not data:
-                    continue
-                else:
-                    self.__add_items(data)
+                urls.append("http://s.m.taobao.com/search?q={}&m=api4h5&page=".format(keyword) + str(i))
+
+        for url in urls:
+            print url
+            body = get_body(url)
+            if len(body) == 0:
+                continue
+            items = self.__parse(body)
+            self.__add_items(items)
+
         self.__close()
 
-    def __add_items(self, items):
-        """
-        将商品信息添加到数据库中
+    def __parse(self, body):
+        """ 解析商品记录 """
+        items = []
+        try:
+            data = json.loads(body)
+        except:
+            return []
+        item_list = data['listItem']
+        if len(item_list) == 0:
+            return []
+        for _item in item_list:
+            item = Item(_item['item_id'], _item['userId'], _item['title'], _item['area'], _item['location'], _item['sellerLoc'], _item['price'], _item['sold'], False)
+            items.append(item)
+        return items
 
-        :param items: list of item json
-        :return: None
-        """
+    def __add_items(self, items):
+        """ 添加商品记录到数据库 """
         for item in items:
-            data = Item(item, False)
-            if self.collection.find({'item_id': Item.item_id}).count() == 0:
-                self.collection.insert(item)
+            if self.collection.find({'item_id': item.item_id}).count() == 0:
+                self.collection.insert(item.dict())
 
     def __close(self):
         """ 关闭数据库 """
@@ -66,4 +66,5 @@ class ItemCrawler:
 
 if __name__ == '__main__':
     crawler = ItemCrawler()
-    crawler.run(keywords=['手机'], pages_count=10)
+    crawler.run()
+
