@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-from gevent import monkey; monkey.patch_all()
+from gevent import monkey;
+
+monkey.patch_all()
 import gevent
 from gevent import queue
 import json
 import time
 import sys
+
 sys.path.append("../")
-from utils.model import *
+from utils.model import Item, Rate
 from utils.utils import *
 
 reload(sys)
@@ -19,8 +22,7 @@ class RateCrawler:
     """ 根据商品, 爬取评论 """
 
     def __init__(self):
-        self.client = init_client()
-        self.db = self.client[config['db_name']]
+        self.client, self.db = init_client()
         self.collection = self.db.rates
         self.collection.ensure_index('rate_id', unique=True)
         self.items = self.db.items.find({'is_crawled': False})
@@ -29,17 +31,9 @@ class RateCrawler:
         items = []
         # 先把数据读到内存
         for item in self.items:
-            items.append(Item(
-                item['item_id'],
-                item['seller_id'],
-                item['title'],
-                item['area'],
-                item['location'],
-                item['price'],
-                item['sellerLoc'],
-                item['sold'],
-                False
-            ))
+            items.append(
+                Item(item['item_id'], item['seller_id'], item['title'], item['area'], item['location'], item['price'],
+                     item['sellerLoc'], item['sold'], False))
             pass
 
         for item in items:
@@ -57,25 +51,25 @@ class RateCrawler:
 
             # 获取评论页数
             page_num = self.__parse_page_num(body)
-            print item.title, ' ', item.item_id, '--------->' , page_num, \
-                time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(time.time()))
+            print item.title, ' ', item.item_id, '--------->', page_num, \
+                time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
 
             # 使用gevent并发爬取，把数据存在queue里
             tasks = []
             q = gevent.queue.Queue()
-            for i in range(1, page_num+1):
+            for i in range(1, page_num + 1):
                 url = base_url % (item.item_id, item.seller_id, i)
                 tasks.append(gevent.spawn(self.__async_get_rates, url, q))
             gevent.joinall(tasks)
-            print "adding data of item:%s" % item.item_id,  time.strftime("%Y-%m-%d %H:%M:%S",
-                                                                          time.localtime(time.time()))
+            print "adding data of item:%s" % item.item_id, time.strftime("%Y-%m-%d %H:%M:%S",
+                                                                         time.localtime(time.time()))
             # 逐个添加到数据库
             while not q.empty():
                 body = q.get()
                 if len(body) == 2:
                     add_failed_url(self.db, url)
                     continue
-                rates = self.__parse_rates(body,item.item_id)
+                rates = self.__parse_rates(body, item.item_id)
                 self.__add_rates(rates)
             # 把item的is_crawled设为1
             self.__update_item(item)
@@ -110,7 +104,8 @@ class RateCrawler:
         if len(rate_list) == 0:
             return []
         for _rate in rate_list:
-            rate = Rate(_rate['id'], _rate['auctionSku'], _rate['rateContent'], _rate['auctionSku'], _rate['buyCount'], _rate['rateDate'], _rate['useful'], _rate['anony'], item_id)
+            rate = Rate(_rate['id'], _rate['auctionSku'], _rate['rateContent'], _rate['auctionSku'], _rate['buyCount'],
+                        _rate['rateDate'], _rate['useful'], _rate['anony'], item_id)
             rates.append(rate)
         return rates
 
@@ -131,9 +126,3 @@ class RateCrawler:
     def __close(self):
         """ 关闭数据库 """
         self.client.close()
-
-
-if __name__ == '__main__':
-    crawler = RateCrawler()
-    crawler.run()
-

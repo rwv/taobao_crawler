@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 import pymongo
 import requests
-import requesocks
 from model import FailedUrl
 from config import *
 
@@ -12,7 +11,7 @@ def init_client():
     if len(config['db_user']) != 0:
         admin = client[config['db_name']]
         admin.authenticate(config['db_user'], config['db_pass'])
-    return client
+    return client, client[config['db_name']]
 
 
 # 发送get请求
@@ -33,4 +32,3 @@ def add_failed_url(db, url):
     collection = db.failed_urls
     if collection.find({'url': url}).count() == 0:
         collection.insert(FailedUrl(url).dict())
-

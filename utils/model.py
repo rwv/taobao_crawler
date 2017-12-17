@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+
 class Item:
     """ 商品 """
 
@@ -57,6 +58,7 @@ class Rate:
             'item_id': self.item_id
         }
 
+
 class FailedUrl:
     """ 用来记录失败的网址 """
 
@@ -66,4 +68,3 @@ class FailedUrl:
     def dict(self):
         """ 将数据转化为字典 """
         return {'url': self.url}
-
