@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-import json
 import sys
 
 sys.path.append("../")
-from utils.model import Rate
 from utils.utils import *
 
 reload(sys)
@@ -38,7 +36,8 @@ class SizeInfoAnalyzer:
 
         items = self.db.items.find({'is_crawled': True})
         count = 0
-        items_len = self.db.items.count({})
+        items_len = self.db.items.count({'is_crawled': True})
+
         for item in items:
             count += 1
             print('read_rates_by_brand: ({}/{})'.format(count, items_len))
@@ -47,15 +46,15 @@ class SizeInfoAnalyzer:
                     # if keyword is in the item title.
                     if keyword in item['title'].lower():
                         # find rate via item_id
-                        for j in self.db.rates.find({'itemid': item['item_id']}):
-                            self.rates[k].append(self.db.items.find(j['size_info']))
+                        for rate_item in self.db.rates.find({'item_id': item['item_id']}):
+                            self.rates[k].append(rate_item['size_info'])
                         break
 
     def __count_by_classifier(self):
         self.rates_count = dict()
         # initialize the rates dict
         for k in self.keywords.keys():
-            temp_dict = dict
+            temp_dict = dict()
             for classifier in self.classifiers:
                 temp_dict[classifier] = 0
             self.rates_count[k] = temp_dict
@@ -67,7 +66,7 @@ class SizeInfoAnalyzer:
                 count += 1
                 print('{}: count_by_classifier: ({}/{})'.format(k, count, size_info_len))
                 for classifier in self.classifiers:
-                    if classifier.lower() in size_info.lower:
+                    if classifier.lower() in size_info.lower():
                         self.rates_count[k][classifier] += 1
                         break
 
