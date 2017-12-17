@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-from item import ItemCrawler
-from rate import RateCrawler
-
+from .rate import RateCrawler
+from .item import ItemCrawler
 
 class Crawler:
     def __init__(self, keywords):

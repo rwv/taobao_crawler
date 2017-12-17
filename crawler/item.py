@@ -2,14 +2,8 @@
 # -*- coding:utf-8 -*-
 
 import json
-import sys
-
-sys.path.append("../")
 from utils.model import Item
 from utils.utils import *
-
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 
 class ItemCrawler:
@@ -28,7 +22,7 @@ class ItemCrawler:
                 urls.append("http://s.m.taobao.com/search?q={}&m=api4h5&page=".format(keyword) + str(i))
 
         for url in urls:
-            print url
+            print(url)
             body = get_body(url)
             if len(body) == 0:
                 continue

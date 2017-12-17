@@ -1,13 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-import sys
-
-sys.path.append("../")
 from utils.utils import *
-
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 
 class SizeInfoAnalyzer:

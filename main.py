@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
+from gevent import monkey
+
+monkey.patch_all()
+
 from utils.config import config
 from crawler import Crawler
 
@@ -9,8 +13,8 @@ if __name__ == '__main__':
 
     menu = [
         ('Item and rate crawler', crawler.run),
-        ('Item crawler', crawler.item_crawler),
-        ('Rate crawler', crawler.rate_crawler),
+        ('Item crawler', crawler.run_item_crawler),
+        ('Rate crawler', crawler.run_rate_crawler),
         ('exit', exit)
     ]
 
@@ -18,4 +22,4 @@ if __name__ == '__main__':
     for i in range(len(menu)):
         print('{}. {}'.format(i, menu[i][0]))
     cursor = input()
-    menu[cursor][1]()
+    menu[int(cursor)][1]()

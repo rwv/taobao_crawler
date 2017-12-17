@@ -1,21 +1,10 @@
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
-
-from gevent import monkey;
-
-monkey.patch_all()
-import gevent
-from gevent import queue
 import json
 import time
-import sys
+import gevent
+from gevent import queue
 
-sys.path.append("../")
 from utils.model import Item, Rate
 from utils.utils import *
-
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 
 class RateCrawler:
@@ -25,9 +14,9 @@ class RateCrawler:
         self.client, self.db = init_client()
         self.collection = self.db.rates
         self.collection.ensure_index('rate_id', unique=True)
-        self.items = self.db.items.find({'is_crawled': False})
 
     def run(self):
+        self.items = self.db.items.find({'is_crawled': False})
         items = []
         # 先把数据读到内存
         for item in self.items:
@@ -37,32 +26,34 @@ class RateCrawler:
             pass
 
         for item in items:
-            base_url = "https://rate.tmall.com/list_detail_rate.htm?itemId=%s&sellerId=%s&currentPage=%d&pageSize=1000000"
-            url = base_url % (item.item_id, item.seller_id, 1)
+            base_url = "https://rate.tmall.com/list_detail_rate.htm?itemId={}&sellerId={}&currentPage={}&pageSize=1000000"
+            url = base_url.format(item.item_id, item.seller_id, 1)
             try:
                 # 这里返回的数据不是纯json，需要在两边加上{}
-                body = "{" + get_body(url).decode("gbk") + "}"
+                print(url)
+                body = "{" + get_body(url) + "}"
                 if len(body) == 2:
                     add_failed_url(self.db, url)
                     continue
-            except:
+            except Exception as e:
+                print(e)
                 add_failed_url(self.db, url)
                 continue
 
             # 获取评论页数
             page_num = self.__parse_page_num(body)
-            print item.title, ' ', item.item_id, '--------->', page_num, \
-                time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
+            print(item.title, ' ', item.item_id, '--------->', page_num,
+                  time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())))
 
             # 使用gevent并发爬取，把数据存在queue里
             tasks = []
             q = gevent.queue.Queue()
             for i in range(1, page_num + 1):
-                url = base_url % (item.item_id, item.seller_id, i)
+                url = base_url.format(item.item_id, item.seller_id, i)
                 tasks.append(gevent.spawn(self.__async_get_rates, url, q))
             gevent.joinall(tasks)
-            print "adding data of item:%s" % item.item_id, time.strftime("%Y-%m-%d %H:%M:%S",
-                                                                         time.localtime(time.time()))
+            print("adding data of item:{}".format(item.item_id),
+                  time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())))
             # 逐个添加到数据库
             while not q.empty():
                 body = q.get()
@@ -78,11 +69,11 @@ class RateCrawler:
     def __async_get_rates(self, url, q):
         """ 异步发送get请求 """
         try:
-            body = "{" + get_body(url).decode("gbk") + "}"
+            body = "{" + get_body(url) + "}"
             q.put(body)
         except:
             add_failed_url(self.db, url)
-        print url
+        print(url)
 
     def __parse_page_num(self, body):
         """ 解析商品的评论页数 """

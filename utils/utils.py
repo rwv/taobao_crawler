@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
 import pymongo
 import requests
-from model import FailedUrl
-from config import *
+from .model import FailedUrl
+from .config import *
 
 
 # 初始化mongodb客户端
@@ -17,10 +17,9 @@ def init_client():
 # 发送get请求
 def get_body(url):
     retry_times = 0
-    client = requests.session()
     while retry_times < 3:
         try:
-            content = client.get(url, timeout=config['timeout']).content
+            content = requests.get(url, timeout=config['timeout']).text
             return content
         except:
             retry_times += 1
