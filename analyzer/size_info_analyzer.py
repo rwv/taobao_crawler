@@ -8,7 +8,7 @@ from utils.utils import *
 
 
 class SizeInfoAnalyzer:
-    """ 爬取淘宝手机商品记录 """
+    """ 商品尺寸分析器，由 keywords, classifier 生成饼状图 """
 
     def __init__(self, keywords, classifiers):
         """
