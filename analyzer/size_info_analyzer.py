@@ -103,7 +103,12 @@ class SizeInfoAnalyzer:
                 count += 1
         fig.savefig('size_info_analyzer.pdf')
 
+    def __close(self):
+        """ 关闭数据库 """
+        self.client.close()
+
     def run(self):
         self.__read_rates_by_brand()
         self.__count_by_classifier()
         self.__save_pie_plot()
+        self.__close()
