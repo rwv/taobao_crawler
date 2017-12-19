@@ -3,6 +3,9 @@
 
 from datetime import datetime
 
+import isoweek
+import matplotlib.pyplot as plt
+
 from utils.utils import *
 
 
@@ -31,7 +34,7 @@ class SizeInfoAnalyzerWithTime:
 
     def __read_rates_by_brand(self):
         self.rates = dict()
-        # initialize the rates dict
+        # initialize the sold dict
         for k in self.keywords.keys():
             self.rates[k] = list()
 
@@ -77,7 +80,7 @@ class SizeInfoAnalyzerWithTime:
 
     def __count_by_classifier(self):
         self.rates_count = dict()
-        # initialize the rates dict
+        # initialize the sold dict
         for k in self.keywords.keys():
             temp_dict = dict()
             self.rates_count[k] = temp_dict
@@ -93,8 +96,57 @@ class SizeInfoAnalyzerWithTime:
                         self.__insert(self.rates_count[k], classifier, size_info[0])
                         break
 
+    def __draw_stack_chart(self, brand):
+        # handle the data
+        data = self.rates_count[brand]
+        years_weeks = list()
+        for key, values in data.items():
+            for value in values.keys():
+                years_weeks.append(isoweek.Week(key, value))
+        years_weeks = sorted(years_weeks)  # a year have 53 weeks at most
+        count_by_time = dict()
+        for classifier in self.classifiers:
+            temp = list()
+            count_by_time[classifier] = temp
+        for year_week in years_weeks:
+            for classifier in self.classifiers:
+                count_by_time[classifier].append(self.__get_value(brand, classifier, year_week.year, year_week.week))
+
+        # draw the pic
+        axis_label = years_weeks.copy()
+        min_week = isoweek.Week(min(years_weeks).year, 0)
+        years_weeks = list(map(lambda x: x - min_week, years_weeks))
+        count = list()
+        labels = list()
+        for k, v in count_by_time.items():
+            count.append(v)
+            labels.append(k)
+
+        axis_label = list(map(lambda x: x.week, axis_label))
+
+        # convert the sum of sold number to 1
+        for j in range(len(count[0])):
+            s = 0
+            for i in range(len(count)):
+                s += count[i][j]
+            for i in range(len(count)):
+                count[i][j] /= s
+
+        plt.figure(figsize=(15, 5))
+        plt.style.use('ggplot')
+        plt.stackplot(years_weeks, count, labels=labels)
+        plt.legend(loc='best')
+        plt.tick_params(top='off', right='off')
+        plt.xticks(years_weeks[::int(len(axis_label) / 15)], axis_label[::int(len(axis_label) / 15)])
+        plt.savefig('size_info_analyzer_with_time_{}.pdf'.format(brand))
+
+    def __close(self):
+        """ 关闭数据库 """
+        self.client.close()
+
     def run(self):
         self.__read_rates_by_brand()
         self.__count_by_classifier()
         for i in self.keywords.keys():
-            self.__draw_stacked_pic(i)
+            self.__draw_stack_chart(i)
+        self.__close()
