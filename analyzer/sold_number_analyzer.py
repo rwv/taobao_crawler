@@ -5,13 +5,11 @@
 import matplotlib.pyplot as plt
 from numpy import ceil, floor
 
-from utils.utils import *
-
 
 class SoldNumberAnalyzer:
     """ 商品销量分析器，由 keywords, 价格生成堆栈图 """
 
-    def __init__(self, keywords):
+    def __init__(self, keywords, db):
         """
         initialize SizeInfoAnalyzer
 
@@ -26,7 +24,7 @@ class SoldNumberAnalyzer:
         }
         """
         self.keywords = keywords
-        self.client, self.db = init_client()
+        self.db = db
 
     def __count_by_price(self):
         self.sold = dict()
@@ -90,11 +88,6 @@ class SoldNumberAnalyzer:
         plt.tick_params(top='off', right='off')
         plt.savefig('sold_number_analyzer.pdf')
 
-    def __close(self):
-        """ 关闭数据库 """
-        self.client.close()
-
     def run(self):
         self.__count_by_price()
         self.__draw_stack_chart()
-        self.__close()

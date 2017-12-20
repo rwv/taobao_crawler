@@ -2,17 +2,19 @@
 # -*- coding:utf-8 -*-
 
 import json
-from utils.model import Item
-from utils.utils import *
+
+from .model import Item
+from .utils import *
 
 
 class ItemCrawler:
     """ 爬取淘宝手机商品记录 """
 
-    def __init__(self, keywords):
-        self.client, self.db = init_client()
+    def __init__(self, keywords, db, timeout=3):
+        self.db = db
         self.collection = self.db.items
         self.keywords = keywords
+        self.timeout = timeout
 
     def run(self):
         urls = []
@@ -23,7 +25,7 @@ class ItemCrawler:
 
         for url in urls:
             print(url)
-            body = get_body(url)
+            body = get_body(url, self.timeout)
             if len(body) == 0:
                 continue
             else:
@@ -31,8 +33,6 @@ class ItemCrawler:
                     break
             items = self.__parse(body)
             self.__add_items(items)
-
-        self.__close()
 
     def __parse(self, body):
         """ 解析商品记录 """
@@ -55,7 +55,3 @@ class ItemCrawler:
         for item in items:
             if self.collection.find({'item_id': item.item_id}).count() == 0:
                 self.collection.insert(item.dict())
-
-    def __close(self):
-        """ 关闭数据库 """
-        self.client.close()

@@ -6,13 +6,11 @@ from datetime import datetime
 import isoweek
 import matplotlib.pyplot as plt
 
-from utils.utils import *
-
 
 class SizeInfoAnalyzerWithTime:
     """ 商品尺寸分析器，由 keywords, classifier 生成堆栈图 """
 
-    def __init__(self, keywords, classifiers):
+    def __init__(self, keywords, classifiers, db):
         """
         initialize SizeInfoAnalyzer
 
@@ -30,7 +28,7 @@ class SizeInfoAnalyzerWithTime:
         """
         self.keywords = keywords
         self.classifiers = classifiers
-        self.client, self.db = init_client()
+        self.db = db
 
     def __read_rates_by_brand(self):
         self.rates = dict()
@@ -140,13 +138,8 @@ class SizeInfoAnalyzerWithTime:
         plt.xticks(years_weeks[::int(len(axis_label) / 15)], axis_label[::int(len(axis_label) / 15)])
         plt.savefig('size_info_analyzer_with_time_{}.pdf'.format(brand))
 
-    def __close(self):
-        """ 关闭数据库 """
-        self.client.close()
-
     def run(self):
         self.__read_rates_by_brand()
         self.__count_by_classifier()
         for i in self.keywords.keys():
             self.__draw_stack_chart(i)
-        self.__close()

@@ -1,19 +1,21 @@
 import json
 import time
+
 import gevent
 from gevent import queue
 
-from utils.model import Item, Rate
-from utils.utils import *
+from .model import Item, Rate
+from .utils import *
 
 
 class RateCrawler:
     """ 根据商品, 爬取评论 """
 
-    def __init__(self):
-        self.client, self.db = init_client()
+    def __init__(self, db, timeout=3):
+        self.db = db
         self.collection = self.db.rates
         self.collection.ensure_index('rate_id', unique=True)
+        self.timeout = timeout
 
     def run(self):
         self.items = self.db.items.find({'is_crawled': False})
@@ -31,7 +33,7 @@ class RateCrawler:
             try:
                 # 这里返回的数据不是纯json，需要在两边加上{}
                 print(url)
-                body = "{" + get_body(url) + "}"
+                body = "{" + get_body(url, self.timeout) + "}"
                 if len(body) == 2:
                     add_failed_url(self.db, url)
                     continue
@@ -64,12 +66,11 @@ class RateCrawler:
                 self.__add_rates(rates)
             # 把item的is_crawled设为1
             self.__update_item(item)
-        self.__close()
 
     def __async_get_rates(self, url, q):
         """ 异步发送get请求 """
         try:
-            body = "{" + get_body(url) + "}"
+            body = "{" + get_body(url, self.timeout) + "}"
             q.put(body)
         except:
             add_failed_url(self.db, url)
@@ -113,7 +114,3 @@ class RateCrawler:
         self.db.items.update({'item_id': item.item_id}, {
             '$set': {'is_crawled': True},
         })
-
-    def __close(self):
-        """ 关闭数据库 """
-        self.client.close()
