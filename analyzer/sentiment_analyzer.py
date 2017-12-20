@@ -32,6 +32,7 @@ class SnowNlpSentimentAnalyzer:
                     'score': SnowNLP(i['rate_content']).sentiments  # TODO multiprocessing
                 }
                 self.sentiments_collection.insert(data)
+                print('Insert into database {}-{}'.format(i['item_id'], i['rate_id']))
         self.__close()
 
     def __close(self):
