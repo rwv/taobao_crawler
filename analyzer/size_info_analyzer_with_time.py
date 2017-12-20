@@ -28,17 +28,17 @@ class SizeInfoAnalyzerWithTime:
         """
         self.keywords = keywords
         self.classifiers = classifiers
-        self.db = db
+        self.__db = db
 
     def __read_rates_by_brand(self):
-        self.rates = dict()
+        self.__rates = dict()
         # initialize the sold dict
         for k in self.keywords.keys():
-            self.rates[k] = list()
+            self.__rates[k] = list()
 
-        items = self.db.items.find({'is_crawled': True})
+        items = self.__db.items.find({'is_crawled': True})
         count = 0
-        items_len = self.db.items.count({'is_crawled': True})
+        items_len = self.__db.items.count({'is_crawled': True})
 
         for item in items:
             count += 1
@@ -48,8 +48,8 @@ class SizeInfoAnalyzerWithTime:
                     # if keyword is in the item title.
                     if keyword in item['title'].lower():
                         # find rate via item_id
-                        for rate_item in self.db.rates.find({'item_id': item['item_id']}):
-                            self.rates[k].append(
+                        for rate_item in self.__db.rates.find({'item_id': item['item_id']}):
+                            self.__rates[k].append(
                                 (datetime.strptime(rate_item['rateDate'], '%Y-%m-%d %H:%M:%S'), rate_item['size_info']))
                         break
 
@@ -72,18 +72,18 @@ class SizeInfoAnalyzerWithTime:
 
     def __get_value(self, brand, classifier, year, week):
         try:
-            return self.rates_count[brand][year][week][classifier]
+            return self.__rates_count[brand][year][week][classifier]
         except KeyError:
             return 0
 
     def __count_by_classifier(self):
-        self.rates_count = dict()
+        self.__rates_count = dict()
         # initialize the sold dict
         for k in self.keywords.keys():
             temp_dict = dict()
-            self.rates_count[k] = temp_dict
+            self.__rates_count[k] = temp_dict
 
-        for k, size_info_list in self.rates.items():
+        for k, size_info_list in self.__rates.items():
             count = 0
             size_info_len = len(size_info_list)
             for size_info in size_info_list:
@@ -91,12 +91,12 @@ class SizeInfoAnalyzerWithTime:
                 print('{}: count_by_classifier: ({}/{})'.format(k, count, size_info_len))
                 for classifier in self.classifiers:
                     if classifier.lower() in size_info[1].lower():
-                        self.__insert(self.rates_count[k], classifier, size_info[0])
+                        self.__insert(self.__rates_count[k], classifier, size_info[0])
                         break
 
     def __draw_stack_chart(self, brand):
         # handle the data
-        data = self.rates_count[brand]
+        data = self.__rates_count[brand]
         years_weeks = list()
         for key, values in data.items():
             for value in values.keys():

@@ -26,17 +26,17 @@ class SizeInfoAnalyzer:
         """
         self.keywords = keywords
         self.classifiers = classifiers
-        self.db = db
+        self.__db = db
 
     def __read_rates_by_brand(self):
-        self.rates = dict()
+        self.__rates = dict()
         # initialize the rates dict
         for k in self.keywords.keys():
-            self.rates[k] = list()
+            self.__rates[k] = list()
 
-        items = self.db.items.find({'is_crawled': True})
+        items = self.__db.items.find({'is_crawled': True})
         count = 0
-        items_len = self.db.items.count({'is_crawled': True})
+        items_len = self.__db.items.count({'is_crawled': True})
 
         for item in items:
             count += 1
@@ -46,20 +46,20 @@ class SizeInfoAnalyzer:
                     # if keyword is in the item title.
                     if keyword in item['title'].lower():
                         # find rate via item_id
-                        for rate_item in self.db.rates.find({'item_id': item['item_id']}):
-                            self.rates[k].append(rate_item['size_info'])
+                        for rate_item in self.__db.rates.find({'item_id': item['item_id']}):
+                            self.__rates[k].append(rate_item['size_info'])
                         break
 
     def __count_by_classifier(self):
-        self.rates_count = dict()
+        self.__rates_count = dict()
         # initialize the rates dict
         for k in self.keywords.keys():
             temp_dict = dict()
             for classifier in self.classifiers:
                 temp_dict[classifier] = 0
-            self.rates_count[k] = temp_dict
+            self.__rates_count[k] = temp_dict
 
-        for k, size_info_list in self.rates.items():
+        for k, size_info_list in self.__rates.items():
             count = 0
             size_info_len = len(size_info_list)
             for size_info in size_info_list:
@@ -67,7 +67,7 @@ class SizeInfoAnalyzer:
                 print('{}: count_by_classifier: ({}/{})'.format(k, count, size_info_len))
                 for classifier in self.classifiers:
                     if classifier.lower() in size_info.lower():
-                        self.rates_count[k][classifier] += 1
+                        self.__rates_count[k][classifier] += 1
                         break
 
     def __pie_sub_plot(self, ax, data, title):
@@ -88,15 +88,15 @@ class SizeInfoAnalyzer:
 
     def __save_pie_plot(self):
         scale = 5
-        fig, axes = plt.subplots(nrows=int(floor(sqrt(len(self.rates_count)))),
-                                 ncols=int(ceil(sqrt(len(self.rates_count)))),
+        fig, axes = plt.subplots(nrows=int(floor(sqrt(len(self.__rates_count)))),
+                                 ncols=int(ceil(sqrt(len(self.__rates_count)))),
                                  figsize=(
-                                     int(ceil(sqrt(len(self.rates_count)))) * scale,
-                                     int(floor(sqrt(len(self.rates_count)))) * scale))
+                                     int(ceil(sqrt(len(self.__rates_count)))) * scale,
+                                     int(floor(sqrt(len(self.__rates_count)))) * scale))
         count = 0
         for ax_row in axes:
             for ax in ax_row:
-                key, value = list(self.rates_count.items())[count]
+                key, value = list(self.__rates_count.items())[count]
                 self.__pie_sub_plot(ax, value, key)
                 count += 1
         fig.savefig('size_info_analyzer.pdf')

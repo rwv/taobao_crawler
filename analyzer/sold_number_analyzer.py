@@ -24,17 +24,17 @@ class SoldNumberAnalyzer:
         }
         """
         self.keywords = keywords
-        self.db = db
+        self.__db = db
 
     def __count_by_price(self):
-        self.sold = dict()
+        self.__sold = dict()
         # initialize the sold dict
         for k in self.keywords.keys():
-            self.sold[k] = dict()
+            self.__sold[k] = dict()
 
-        items = list(self.db.items.find({'is_crawled': True}))
+        items = list(self.__db.items.find({'is_crawled': True}))
         count = 0
-        items_len = self.db.items.count({'is_crawled': True})
+        items_len = self.__db.items.count({'is_crawled': True})
 
         for item in items:
             count += 1
@@ -44,13 +44,13 @@ class SoldNumberAnalyzer:
                     # if keyword is in the item title.
                     if keyword in item['title'].lower():
                         # find rate via item_id
-                        self.sold[brand][float(item['price'])] = self.sold[brand].get(float(item['price']),
-                                                                                      0) + self.db.rates.count(
+                        self.__sold[brand][float(item['price'])] = self.__sold[brand].get(float(item['price']),
+                                                                                          0) + self.__db.rates.count(
                             {'item_id': item['item_id']})
-        print(self.sold)
+        print(self.__sold)
 
     def __get_sold(self, lower, upper, brand):
-        data = self.sold[brand]
+        data = self.__sold[brand]
         sum = 0
         for price, count in data.items():
             if lower <= price < upper:
@@ -59,7 +59,7 @@ class SoldNumberAnalyzer:
 
     def __draw_stack_chart(self, div=10):
         prices_list = []
-        for i in self.sold.values():
+        for i in self.__sold.values():
             for j in i.keys():
                 prices_list.append(j)
         min_price = int(floor(min(prices_list)))
