@@ -11,8 +11,8 @@ class ItemCrawler:
     """ 爬取淘宝手机商品记录 """
 
     def __init__(self, keywords, db, timeout=3):
-        self.db = db
-        self.collection = self.db.items
+        self.__db = db
+        self.__collection = self.__db.items
         self.keywords = keywords
         self.timeout = timeout
 
@@ -53,5 +53,5 @@ class ItemCrawler:
     def __add_items(self, items):
         """ 添加商品记录到数据库 """
         for item in items:
-            if self.collection.find({'item_id': item.item_id}).count() == 0:
-                self.collection.insert(item.dict())
+            if self.__collection.find({'item_id': item.item_id}).count() == 0:
+                self.__collection.insert(item.dict())

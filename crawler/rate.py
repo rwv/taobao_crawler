@@ -12,16 +12,16 @@ class RateCrawler:
     """ 根据商品, 爬取评论 """
 
     def __init__(self, db, timeout=3):
-        self.db = db
-        self.collection = self.db.rates
-        self.collection.ensure_index('rate_id', unique=True)
+        self.__db = db
+        self.__collection = self.__db.rates
+        self.__collection.ensure_index('rate_id', unique=True)
         self.timeout = timeout
 
     def run(self):
-        self.items = self.db.items.find({'is_crawled': False})
+        self.__items = self.__db.items.find({'is_crawled': False})
         items = []
         # 先把数据读到内存
-        for item in self.items:
+        for item in self.__items:
             items.append(
                 Item(item['item_id'], item['seller_id'], item['title'], item['area'], item['location'], item['price'],
                      item['sellerLoc'], item['sold'], False))
@@ -35,11 +35,11 @@ class RateCrawler:
                 print(url)
                 body = "{" + get_body(url, self.timeout) + "}"
                 if len(body) == 2:
-                    add_failed_url(self.db, url)
+                    add_failed_url(self.__db, url)
                     continue
             except Exception as e:
                 print(e)
-                add_failed_url(self.db, url)
+                add_failed_url(self.__db, url)
                 continue
 
             # 获取评论页数
@@ -60,7 +60,7 @@ class RateCrawler:
             while not q.empty():
                 body = q.get()
                 if len(body) == 2:
-                    add_failed_url(self.db, url)
+                    add_failed_url(self.__db, url)
                     continue
                 rates = self.__parse_rates(body, item.item_id)
                 self.__add_rates(rates)
@@ -73,7 +73,7 @@ class RateCrawler:
             body = "{" + get_body(url, self.timeout) + "}"
             q.put(body)
         except:
-            add_failed_url(self.db, url)
+            add_failed_url(self.__db, url)
         print(url)
 
     def __parse_page_num(self, body):
@@ -105,12 +105,12 @@ class RateCrawler:
         """ 添加商品评论 """
         for rate in rates:
             try:
-                self.collection.insert(rate.dict())
+                self.__collection.insert(rate.dict())
             except:
                 pass
 
     def __update_item(self, item):
         """ 把当前商品设置为：已经爬取过 """
-        self.db.items.update({'item_id': item.item_id}, {
+        self.__db.items.update({'item_id': item.item_id}, {
             '$set': {'is_crawled': True},
         })
