@@ -9,24 +9,21 @@ from numpy import ceil, floor
 class SoldNumberAnalyzer:
     """ 商品销量分析器，由 keywords, 价格生成堆栈图 """
 
-    def __init__(self, keywords, db):
+    def __init__(self, keywords, db, div=10):
         """
-        initialize SizeInfoAnalyzer
-
-        :param keywords: keywords example:
-        {
-            '小米': ['米', 'mi'],
-            '苹果': ['苹果', 'apple', 'iphone'],
-            '三星': ['三星', 'samsung'],
-            'Vivo': ['vivo'],
-            'OPPO': ['oppo'],
-            '华为': ['huawei', '华为']
-        }
+        :param keywords: 一个关键词的字典, 关键词的值为一个包含可能的, 示例:
+         {'小米': ['米', 'mi'], '苹果': ['苹果', 'apple', 'iphone']}
+        :param db: 一个 pymongo.MongoClient.db 的实例
+        :param div: 划分的价格区间数
         """
         self.keywords = keywords
         self.__db = db
+        self.div = div
 
     def __count_by_price(self):
+        """
+        在某一品牌下，对某一价格进行计数，存储至 self.__sold 中
+        """
         self.__sold = dict()
         # initialize the sold dict
         for k in self.keywords.keys():
@@ -50,6 +47,14 @@ class SoldNumberAnalyzer:
         print(self.__sold)
 
     def __get_sold(self, lower, upper, brand):
+        """
+        获取某品牌价格位于[lower,upper)区间的销量
+
+        :param lower: 查询的价格下界
+        :param upper: 查询的价格上界
+        :param brand: 品牌
+        :return: 销量
+        """
         data = self.__sold[brand]
         sum = 0
         for price, count in data.items():
@@ -57,7 +62,13 @@ class SoldNumberAnalyzer:
                 sum += count
         return sum
 
-    def __draw_stack_chart(self, div=10):
+    def __draw_stack_chart(self, div):
+        """
+        画堆栈图
+
+        :param div: 划分区间数
+        :return: 一个 matplotlib.pyplot 实例
+        """
         prices_list = []
         for i in self.__sold.values():
             for j in i.keys():
@@ -86,8 +97,13 @@ class SoldNumberAnalyzer:
         plt.stackplot(prices_seq, counts, labels=brands)
         plt.legend(loc='best')
         plt.tick_params(top='off', right='off')
-        plt.savefig('sold_number_analyzer.pdf')
+        return plt
 
     def run(self):
+        """
+        运行商品销量分析器，画出堆栈图。
+
+        :return: 一个 matplotlib.pyplot 实例
+        """
         self.__count_by_price()
-        self.__draw_stack_chart()
+        return self.__draw_stack_chart(self.div)

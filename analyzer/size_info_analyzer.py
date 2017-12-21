@@ -6,29 +6,26 @@ from numpy import sqrt, ceil, floor
 
 
 class SizeInfoAnalyzer:
-    """ 商品尺寸分析器，由 keywords, classifier 生成饼状图 """
+    """
+    商品尺寸分析器，由关键词，分类器生成饼状图
+    """
 
     def __init__(self, keywords, classifiers, db):
         """
-        initialize SizeInfoAnalyzer
-
-        :param keywords: keywords example:
-        {
-            '小米': ['米', 'mi'],
-            '苹果': ['苹果', 'apple', 'iphone'],
-            '三星': ['三星', 'samsung'],
-            'Vivo': ['vivo'],
-            'OPPO': ['oppo'],
-            '华为': ['huawei', '华为']
-        }
-        :param classifiers: classifiers example:
-        ['16G', '32G', '64G', '128G', '256G']
+        :param keywords: 一个关键词的字典, 关键词的值为一个包含可能的, 示例:
+         {'小米': ['米', 'mi'], '苹果': ['苹果', 'apple', 'iphone']}
+        :param classifiers: 一个分类器的列表, 示例:
+         ['16G', '32G', '64G', '128G', '256G']
+        :param db: 一个 pymongo.MongoClient.db 的实例
         """
         self.keywords = keywords
         self.classifiers = classifiers
         self.__db = db
 
     def __read_rates_by_brand(self):
+        """
+        读取各个品牌商品所有评论的商品尺寸信息，存储至 self.__rates 中。
+        """
         self.__rates = dict()
         # initialize the rates dict
         for k in self.keywords.keys():
@@ -51,6 +48,9 @@ class SizeInfoAnalyzer:
                         break
 
     def __count_by_classifier(self):
+        """
+        通过分类器对所有商品尺寸信息进行分类，计数。
+        """
         self.__rates_count = dict()
         # initialize the rates dict
         for k in self.keywords.keys():
@@ -71,6 +71,12 @@ class SizeInfoAnalyzer:
                         break
 
     def __pie_sub_plot(self, ax, data, title):
+        """
+        画某一品牌商品的各个分类的饼状图
+        :param ax: plt.subplots 中返回的 ax
+        :param data: 一个键为分类标准，值为数量的字典，如{'32G':1,'64G':2}
+        :param title: 饼状图的标题
+        """
         keys = list(data.keys())
         values = list(data.values())
         labels = keys
@@ -87,6 +93,11 @@ class SizeInfoAnalyzer:
         ax.set_title(title)
 
     def __save_pie_plot(self):
+        """
+        画所有品牌的饼状图
+
+        :return: 一个 matplotlib.pyplot 实例
+        """
         scale = 5
         fig, axes = plt.subplots(nrows=int(floor(sqrt(len(self.__rates_count)))),
                                  ncols=int(ceil(sqrt(len(self.__rates_count)))),
@@ -99,9 +110,14 @@ class SizeInfoAnalyzer:
                 key, value = list(self.__rates_count.items())[count]
                 self.__pie_sub_plot(ax, value, key)
                 count += 1
-        fig.savefig('size_info_analyzer.pdf')
+        return fig
 
     def run(self):
+        """
+        运行商品尺寸分析器，画出饼状图。
+
+        :return: 一个 matplotlib.pyplot 实例
+        """
         self.__read_rates_by_brand()
         self.__count_by_classifier()
-        self.__save_pie_plot()
+        return self.__save_pie_plot()

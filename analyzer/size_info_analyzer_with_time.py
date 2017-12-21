@@ -8,23 +8,17 @@ import matplotlib.pyplot as plt
 
 
 class SizeInfoAnalyzerWithTime:
-    """ 商品尺寸分析器，由 keywords, classifier 生成堆栈图 """
+    """
+    商品尺寸分析器，由 keywords, classifier 生成堆栈图
+    """
 
     def __init__(self, keywords, classifiers, db):
         """
-        initialize SizeInfoAnalyzer
-
-        :param keywords: keywords example:
-        {
-            '小米': ['米', 'mi'],
-            '苹果': ['苹果', 'apple', 'iphone'],
-            '三星': ['三星', 'samsung'],
-            'Vivo': ['vivo'],
-            'OPPO': ['oppo'],
-            '华为': ['huawei', '华为']
-        }
-        :param classifiers: classifiers example:
-        ['16G', '32G', '64G', '128G', '256G']
+        :param keywords: 一个关键词的字典, 关键词的值为一个包含可能的, 示例:
+         {'小米': ['米', 'mi'], '苹果': ['苹果', 'apple', 'iphone']}
+        :param classifiers: 一个分类器的列表, 示例:
+         ['16G', '32G', '64G', '128G', '256G']
+        :param db: 一个 pymongo.MongoClient.db 的实例
         """
         self.keywords = keywords
         self.classifiers = classifiers
@@ -54,7 +48,22 @@ class SizeInfoAnalyzerWithTime:
                         break
 
     def __insert(self, brand_item, classifier, date):
+        """
+        将某一日期插入某一品牌对应的字典中，并计数。
+
+        :param brand_item: 某一品牌对应的字典
+        :param classifier: 分类词
+        :param date: 一个 datetime 实例
+        """
+
         def check_week_and_insert(year_dict, week, classifier):
+            """
+            检查 year_dict 中对应周的字典时候存在，存在则插入否则创建并插入
+
+            :param year_dict: 对应年份的字典
+            :param week: 周数
+            :param classifier:分类词
+            """
             if year_dict.get(week):
                 year_dict[week][classifier] = year_dict[week].get(classifier, 0) + 1
             else:
@@ -71,6 +80,15 @@ class SizeInfoAnalyzerWithTime:
             check_week_and_insert(brand_item[year], week, classifier)
 
     def __get_value(self, brand, classifier, year, week):
+        """
+        获取对应关键词，分类次，年份周数的销量。
+
+        :param brand: 关键词
+        :param classifier: 分类词
+        :param year: 年份
+        :param week: 周数
+        :return: 销量
+        """
         try:
             return self.__rates_count[brand][year][week][classifier]
         except KeyError:
@@ -136,10 +154,10 @@ class SizeInfoAnalyzerWithTime:
         plt.legend(loc='best')
         plt.tick_params(top='off', right='off')
         plt.xticks(years_weeks[::int(len(axis_label) / 15)], axis_label[::int(len(axis_label) / 15)])
-        plt.savefig('size_info_analyzer_with_time_{}.pdf'.format(brand))
 
     def run(self):
         self.__read_rates_by_brand()
         self.__count_by_classifier()
         for i in self.keywords.keys():
             self.__draw_stack_chart(i)
+        return plt

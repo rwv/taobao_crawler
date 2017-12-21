@@ -9,15 +9,37 @@ from .utils import *
 
 
 class RateCrawler:
-    """ 根据商品, 爬取评论 """
+    """
+    从数据库中寻取未爬取评论的商品，爬取其所有评论，并插入至数据库中。
+    插入数据示例：{
+    "buyCount" : 0,
+    "useful" : true,
+    "item_id" : "560697135358",
+    "rate_id" : NumberLong("331495062062"),
+    "rateDate" : "2017-11-23 23:16:40",
+    "rate_content" : "挺棒的手机 快递也快非常满意",
+    "auctionSku" : "机身颜色:香槟色;套餐类型:官方标配;存储容量:64GB;版本类型:中国大陆",
+    "anony" : true,
+    "size_info" : "机身颜色:香槟色;套餐类型:官方标配;存储容量:64GB;版本类型:中国大陆"
+    }
+    """
 
     def __init__(self, db, timeout=3):
+        """
+        初始化 RateCrawler 实例
+
+        :param db: 一个 pymongo.MongoClient.db 的实例
+        :param timeout: 爬取超时时间, 默认值为 3
+        """
         self.__db = db
         self.__collection = self.__db.rates
         self.__collection.ensure_index('rate_id', unique=True)
         self.timeout = timeout
 
     def run(self):
+        """
+        运行商品评论爬虫，插入至数据库中。
+        """
         self.__items = self.__db.items.find({'is_crawled': False})
         items = []
         # 先把数据读到内存
