@@ -4,7 +4,7 @@
 from snownlp import SnowNLP
 
 
-class SnowNlpSentimentAnalyzer:
+class SentimentAnalyzer:
     """
     遍历 rates collection, 对当中每个评论进行情感分析，并将其存入 rates_sentiments collection 中。插入数据示例:
     {'item_id': '561319321061', 'rate_id': NumberLong("331495062062"), 'score': 1.00}
@@ -22,7 +22,7 @@ class SnowNlpSentimentAnalyzer:
 
     def run(self):
         """
-        开始运行分析器，分析每个评论，插入数据库中
+        运行分析器，分析每个评论，插入数据库中
         """
         rates = self.__rates_collection.find({})
         rate_counts = self.__rates_collection.find({}).count()

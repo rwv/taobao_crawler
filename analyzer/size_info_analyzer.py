@@ -73,6 +73,7 @@ class SizeInfoAnalyzer:
     def __pie_sub_plot(self, ax, data, title):
         """
         画某一品牌商品的各个分类的饼状图
+
         :param ax: plt.subplots 中返回的 ax
         :param data: 一个键为分类标准，值为数量的字典，如{'32G':1,'64G':2}
         :param title: 饼状图的标题
