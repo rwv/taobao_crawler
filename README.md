@@ -1,9 +1,6 @@
-# taobao_crawler
+# Taobao Crawler
 
-## 综述
-1. 假想公司的手机部门业绩一直不好，某只团队被要求利用电商数据给产品研发提供建议。
-2. 我们团队需要通过收集电商网站信息，分析评分、评论数、评论文本数据，得到不同价格挡位不同配置的顾客接受度。
-3. 通过分析不同配置、不同配件在历史机型上的占有率和好评度，分析手机配置/配件的趋势，对我司手机产品研发提供参考。
+[![Documentation Status](https://readthedocs.org/projects/taobao-crawler/badge/?version=latest)](http://taobao-crawler.readthedocs.io/?badge=latest)
 
 ## 技术细节
 1. 爬取淘宝网上手机的商品信息（参数、销量、评分）和商品评论文本；
@@ -11,12 +8,17 @@
 3. 处理评论文本数据
   * 使用 `jieba` 对数据进行词频分析，进行词云等数据可视化
   * 通过 `SnowNLP` 对数据进行NLP分析
-    - 制作词向量，比较不同词的相似度
     - 情感分析，与淘宝评分系统的结果相比较，将结果定为偏差程度，并考察偏差可能（水军，刷评）
-    - 文本相似分析，利用聚类算法/[Okapi BM25] (https://en.wikipedia.org/wiki/Okapi_BM25) 算法，分析某一商品评论的重复率
 4. 处理商品信息
   * 数据可视化
     - 各价位各品牌各款手机的占有率/好感度
     - 商品销售趋势
     - 配置占有率趋势
     - 各品牌产品线设置
+
+## TODO
+
+* [ ] Travis-CI & Coveralls
+* [ ] unittest
+* [ ] ShowNLP multiprocessing
+
