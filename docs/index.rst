@@ -2,6 +2,12 @@
 ==========================================
 
 .. toctree::
+   :maxdepth: 2
+   :caption: Others
+
+   others/gettingstarted
+
+.. toctree::
    :maxdepth: 1
    :caption: Crawler
 

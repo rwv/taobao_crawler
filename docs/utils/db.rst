@@ -10,6 +10,7 @@ DB
 ~~~~~~~~~~~~~~~~~
 ::
 
+    from taobao_crawler.utils.db import DB
     db_config = {'db_user': '',  # 数据库用户名
                  'db_pass': '',  # 数据库密码
                  'db_host': 'localhost',  # 数据库地址
