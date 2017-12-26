@@ -12,6 +12,8 @@ Crawler
     from taobao_crawler.crawler import Crawler
     crawler = Crawler(keywords, db)
 
+``Crawler(keywords, db)`` 中的 ``db`` 参见 :doc:`../utils/db`
+
 运行商品信息爬虫
 ~~~~~~~~~~~~~~~~~
 ::

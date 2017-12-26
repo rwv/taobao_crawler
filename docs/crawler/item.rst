@@ -1,4 +1,4 @@
-ItemCrawler
+Item Crawler
 =============
 
 进行商品信息和评论的爬取
@@ -15,6 +15,8 @@ ItemCrawler
     keywords = ['手机', 'Phone']
     from taobao_crawler.crawler.item import ItemCrawler
     crawler = ItemCrawler(keywords, db)
+
+``ItemCrawler(keywords, db)`` 中的 ``db`` 参见 :doc:`../utils/db`
 
 运行商品信息爬虫
 ~~~~~~~~~~~~~~~~~

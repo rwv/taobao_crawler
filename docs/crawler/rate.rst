@@ -1,4 +1,4 @@
-RateCrawler
+Rate Crawler
 =============
 
 对数据库中未爬取评论的商品进行商品评论的爬取
@@ -13,7 +13,9 @@ RateCrawler
 ::
 
     from taobao_crawler.crawler.rate import RateCrawler
-    rate_crawler = RateCrawler(keywords,db)
+    rate_crawler = RateCrawler(db)
+
+``RateCrawler(db)`` 中的 ``db`` 参见 :doc:`../utils/db`
 
 运行评论爬虫
 ~~~~~~~~~~~~~~~~~
