@@ -2,7 +2,7 @@
 
 [![Documentation Status](https://readthedocs.org/projects/taobao-crawler/badge/?version=latest)](http://taobao-crawler.readthedocs.io/)
 
-** 由于反爬机制升级，目前已失效 **
+**由于反爬机制升级，目前已失效**
 
 ## 技术细节
 1. 爬取淘宝网上手机的商品信息（参数、销量、评分）和商品评论文本；
